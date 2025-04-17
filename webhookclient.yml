@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webhook-client
+spec:
+  selector:
+    matchLabels:
+      app: webhook-client
+  template:
+    metadata:
+      labels:
+        app: webhook-client
+    spec:
+      containers:
+      - name: webhook-client
+        image: dahalsujata52897/webhookclient:latest
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+        - containerPort: 8443
+        env: 
+        - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key:  ASPNETCORE_FORWARDEDHEADERS_ENABLED
+        - name: ConnectionStrings__eventbus
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key:  ConnectionStrings__eventbus
+        - name: ConnectionStrings__webhooksdb
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key:  ConnectionStrings__webhooksdb
+        - name: IdentityUrl
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key:  identity_url    
+        - name: CallBackUrl
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key:  WebhooksApiClient       
+        - name: HTTP_PORTS
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key:  HTTP_PORTS 
+        - name: services__webhooks-api__http__0
+          value: http://172.24.158.233:30008
+        # - name: services__webhooks-api__https__0
+        #   value: http://172.24.158.233:30008  
+        # - name: "DOTNET_ReadOnlyDataProtectionKeyDirectory"
+        #   value: "/etc/dataprotection/"
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Development
+        volumeMounts:
+        - mountPath: /home/app/.aspnet/DataProtection-Keys
+          name: data
+      volumes:
+      - name: data
+        persistentVolumeClaim: 
+          claimName: pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webhook-client
+spec:
+  selector:
+    app: webhook-client
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: http
+    nodePort: 30007
+  type: NodePort

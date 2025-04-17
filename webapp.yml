@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp
+spec:
+  selector:
+    matchLabels:
+      app: webapp
+  template:
+    metadata:
+      labels:
+        app: webapp
+    spec:
+      containers:
+      - name: webapp
+        image: dahalsujata52897/webapp-latest
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+        securityContext:
+          runAsUser: 0
+        env:
+        - name: CallBackUrl
+          value: https://webapp.local:31813/
+        - name: HTTP_PORTS
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key:  HTTP_PORTS 
+        # - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+        #   valueFrom: 
+        #     configMapKeyRef: 
+        #       name: all-env
+        #       key:  ASPNETCORE_FORWARDEDHEADERS_ENABLED
+        - name: IdentityUrl
+          value: https://eshop.local:31813
+        - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+          value: "true"
+        - name: ConnectionStrings__eventbus
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key: ConnectionStrings__eventbus
+        - name: services__basket-api__http__0
+          value: http://172.24.158.233:30001
+        - name: services__catalog-api__http__0
+          value: http://172.24.158.233:30002
+        - name: services__ordering-api__http__0
+          value: http://172.24.158.233:30005
+        - name: "DOTNET_ReadOnlyDataProtectionKeyDirectory"
+          value: /home/app/.aspnet/DataProtection-Keys  
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Development
+        volumeMounts:
+        - mountPath: /home/app/.aspnet/DataProtection-Keys
+          name: data
+      volumes:
+      - name: data
+        persistentVolumeClaim: 
+          claimName: pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp
+spec:
+  selector:
+    app: webapp
+  ports:
+  - port: 8080
+    targetPort: 8080
+    nodePort: 30006
+    name: http
+  type: NodePort
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: webapp-ingress
+  labels:
+    name: webapp-ingress
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - webapp.local
+    secretName: webapp-tls
+  rules:
+  - host: webapp.local
+    http:
+      paths:
+      - pathType: Prefix
+        path: /
+        backend:
+          service:
+            name: webapp
+            port: 
+              number: 8080

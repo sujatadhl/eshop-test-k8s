@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webhooks-api
+spec:
+  selector:
+    matchLabels:
+      app: webhooks-api
+  template:
+    metadata:
+      labels:
+        app: webhooks-api
+    spec:
+      containers:
+      - name: webhooks-api
+        image: dahalsujata52897/webhooks-api:latest
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+        env:
+        - name: HTTP_PORTS
+          value: "8080"
+        - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+          value: "true"
+        - name: IdentityUrl
+          value: https://eshop.local:31813
+        - name: ConnectionStrings__webhooksdb
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key: ConnectionStrings__webhooksdb         
+        - name: ConnectionStrings__eventbus
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key: ConnectionStrings__eventbus
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Development
+        volumeMounts:
+        - mountPath: /home/app/.aspnet/DataProtection-Keys
+          name: data
+      volumes:
+      - name: data
+        persistentVolumeClaim: 
+          claimName: pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webhooks-api
+spec:
+  selector:
+    app: webhooks-api
+  ports:
+  - port: 8080
+    targetPort: 8080
+    nodePort: 30008
+  type: NodePort

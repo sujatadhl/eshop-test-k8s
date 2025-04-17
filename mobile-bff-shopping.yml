@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mobile-bff-shopping
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mobile-bff-shopping
+  template:
+    metadata:
+      labels:
+        app: mobile-bff-shopping
+    spec:
+      containers:
+      - name: mobile-bff-shopping
+        image: dahalsujata52897/mobile-bff-shopping
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+        env: 
+        - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key:  ASPNETCORE_FORWARDEDHEADERS_ENABLED
+        - name: ConnectionStrings__eventbus
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key:  ConnectionStrings__eventbus
+        - name: services__basket-api__http__0
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key:  services__basket-api__http__0
+        - name: services__catalog-api__http__0
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key:  services__catalog-api__http__0              
+        - name: services__identity-api__http__0
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key: services__identity-api__http__0  
+        - name: services__identity-api__https__0
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key: services__identity-api__https__0          
+        - name: services__ordering-api__http__0
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key: services__ordering-api__http__0 
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Development 
+        volumeMounts:
+        - mountPath: /home/app/.aspnet/DataProtection-Keys
+          name: data
+      volumes:
+      - name: data
+        persistentVolumeClaim: 
+          claimName: pvc
+--- 
+apiVersion: v1
+kind: Service
+metadata:
+  name: mobile-bff-shopping
+spec:
+  selector:
+    app: mobile-bff-shopping
+  ports:
+  - port: 8080
+    targetPort: 8080
+    nodePort: 30004
+  type: NodePort

@@ -1,0 +1,112 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: identity-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: identity-api
+  template:
+    metadata:
+      labels:
+        app: identity-api
+    spec:
+      containers:
+      - name: identity-api
+        image: dahalsujata52897/identity-api:latest
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+        securityContext:
+          runAsUser: 0
+        env:
+        - name: WebAppClient
+          value: http://172.24.158.233:30006
+        - name: ConnectionStrings__identitydb
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key: ConnectionStrings__identitydb
+        - name: HTTP_PORTS
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key: HTTP_PORTS
+        - name: BasketApiClient
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key: BasketApiClient
+        - name: OrderingApiClient
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key: OrderingApiClient
+        - name: WebhooksApiClient
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key: WebhooksApiClient
+        - name: WebhooksWebClient
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key: WebhooksWebClient
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Development
+        - name: SSL_CERT_FILE
+          value: "/etc/ssl/certs/eshop.pem"
+        volumeMounts:
+        - mountPath: /home/app/.aspnet/DataProtection-Keys
+          name: data
+      volumes:
+      - name: data
+        persistentVolumeClaim: 
+          claimName: pvc
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: identity-api
+spec:
+  selector:
+    app: identity-api
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: http
+    nodePort: 30003
+  type: NodePort
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: identity-api-ingress
+  labels:
+    name: identity-api-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - eshop.local
+    secretName: eshop-tls
+  rules:
+  - host: eshop.local
+    http:
+      paths:
+      - pathType: Prefix
+        path: /
+        backend:
+          service:
+            name: identity-api
+            port:
+              number: 8080

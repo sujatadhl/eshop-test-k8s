@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: basket-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: basket-api
+  template:
+    metadata:
+      labels:
+        app: basket-api
+    spec:
+      containers:
+      - name: basket-api
+        image: dahalsujata52897/basket-api
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+        env: 
+        - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key:  ASPNETCORE_FORWARDEDHEADERS_ENABLED
+        - name: ConnectionStrings__eventbus
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key:  ConnectionStrings__eventbus
+        - name: ConnectionStrings__redis
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key:  ConnectionStrings__redis
+        - name: Identity__Url
+          valueFrom: 
+            configMapKeyRef: 
+              name: all-env
+              key:  identity_url   
+        - name: "DOTNET_ReadOnlyDataProtectionKeyDirectory"
+          value: /home/app/.aspnet/DataProtection-Keys     
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Development 
+        volumeMounts:
+        - mountPath: /home/app/.aspnet/DataProtection-Keys
+          name: data
+      volumes:
+      - name: data
+        persistentVolumeClaim: 
+          claimName: pvc
+--- 
+apiVersion: v1
+kind: Service
+metadata:
+  name: basket-api
+spec:
+  selector:
+    app: basket-api
+  ports:
+  - port: 8080
+    targetPort: 8080
+    nodePort: 30001
+  type: NodePort
+
