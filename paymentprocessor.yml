@@ -22,24 +22,15 @@ spec:
         - containerPort: 8080
         env:
         - name: ConnectionStrings__eventbus
-          valueFrom: 
-            configMapKeyRef: 
-              name: all-env
-              key:  ConnectionStrings__eventbus
-        - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
-          valueFrom: 
-            configMapKeyRef: 
-              name: all-env
-              key:  ASPNETCORE_FORWARDEDHEADERS_ENABLED
-        - name: HTTP_PORTS
-          valueFrom: 
-            configMapKeyRef: 
-              name: all-env
-              key:  HTTP_PORTS   
-        # - name: "DOTNET_ReadOnlyDataProtectionKeyDirectory"
-        #   value: "/etc/dataprotection/"
+          value: amqp://eshop:YJr23N850SJBBqn9UUrXnE@eventbus:5672
         - name: ASPNETCORE_ENVIRONMENT
           value: Development
+        - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+          value: "true"
+        - name: DOTNET_LAUNCH_PROFILE
+          value: PaymentProcessor
+        - name: DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION
+          value: "true" 
         volumeMounts:
         - mountPath: /home/app/.aspnet/DataProtection-Keys
           name: data

@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: all-env
 data:
-  identity_url: https://eshop.local:31813
+  identity_url: https://eshop.local
   HTTP_PORTS: "8080"
   ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
   ConnectionStrings__eventbus: amqp://eshop:YJr23N850SJBBqn9UUrXnE@eventbus:5672
@@ -17,15 +17,15 @@ data:
     CREATE DATABASE catalogdb;
     CREATE DATABASE identitydb;
     CREATE DATABASE webhooksdb;
-  BasketApiClient: http://172.24.158.233:30001
+  BasketApiClient: http://basket-api:8080
   OrderingApiClient: http://172.24.158.233:30005
-  WebAppClient: http://172.24.158.233:30006
+  WebAppClient: https://webapp.local
   WebhooksApiClient: http://172.24.158.233:30008
   WebhooksWebClient: http://172.24.158.233:30007
   services__basket-api__http__0: http://172.24.158.233:30001
   services__catalog-api__http__0: http://172.24.158.233:30002
-  services__identity-api__http__0: http://eshop.local:32364
-  services__identity-api__https__0: https://eshop.local:31813
+  services__identity-api__http__0: http://eshop.local
+  services__identity-api__https__0: https://eshop.local
   services__ordering-api__http__0: http://172.24.158.233:30005
 
 

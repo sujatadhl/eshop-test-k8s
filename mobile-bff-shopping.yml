@@ -22,43 +22,24 @@ spec:
         ports:
         - containerPort: 8080
         env: 
-        - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
-          valueFrom: 
-            configMapKeyRef: 
-              name: all-env
-              key:  ASPNETCORE_FORWARDEDHEADERS_ENABLED
-        - name: ConnectionStrings__eventbus
-          valueFrom: 
-            configMapKeyRef: 
-              name: all-env
-              key:  ConnectionStrings__eventbus
-        - name: services__basket-api__http__0
-          valueFrom: 
-            configMapKeyRef: 
-              name: all-env
-              key:  services__basket-api__http__0
-        - name: services__catalog-api__http__0
-          valueFrom: 
-            configMapKeyRef: 
-              name: all-env
-              key:  services__catalog-api__http__0              
-        - name: services__identity-api__http__0
-          valueFrom: 
-            configMapKeyRef: 
-              name: all-env
-              key: services__identity-api__http__0  
-        - name: services__identity-api__https__0
-          valueFrom: 
-            configMapKeyRef: 
-              name: all-env
-              key: services__identity-api__https__0          
-        - name: services__ordering-api__http__0
-          valueFrom: 
-            configMapKeyRef: 
-              name: all-env
-              key: services__ordering-api__http__0 
         - name: ASPNETCORE_ENVIRONMENT
-          value: Development 
+          value: Development
+        - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+          value: "true"
+        - name: services__basket-api__http__0
+          value: http://basket-api:8080
+        - name: services__catalog-api__http__0
+          value: http://catalog-api:8080
+        - name: services__identity-api__http__0
+          value: http://eshop.local
+        - name: services__identity-api__https__0
+          value: https://eshop.local
+        - name: services__ordering-api__http__0
+          value: http://ordeting-api:8080
+        - name: DOTNET_LAUNCH_PROFILE
+          value: http
+        - name: DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION
+          value: "true" 
         volumeMounts:
         - mountPath: /home/app/.aspnet/DataProtection-Keys
           name: data
@@ -77,5 +58,3 @@ spec:
   ports:
   - port: 8080
     targetPort: 8080
-    nodePort: 30004
-  type: NodePort

@@ -21,38 +21,50 @@ spec:
             cpu: "500m"
         ports:
         - containerPort: 8080
-        env: 
-        - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
-          valueFrom: 
-            configMapKeyRef: 
-              name: all-env
-              key:  ASPNETCORE_FORWARDEDHEADERS_ENABLED
-        - name: ConnectionStrings__eventbus
-          valueFrom: 
-            configMapKeyRef: 
-              name: all-env
-              key:  ConnectionStrings__eventbus
-        - name: ConnectionStrings__redis
-          valueFrom: 
-            configMapKeyRef: 
-              name: all-env
-              key:  ConnectionStrings__redis
-        - name: Identity__Url
-          valueFrom: 
-            configMapKeyRef: 
-              name: all-env
-              key:  identity_url   
-        - name: "DOTNET_ReadOnlyDataProtectionKeyDirectory"
-          value: /home/app/.aspnet/DataProtection-Keys     
+        env:
         - name: ASPNETCORE_ENVIRONMENT
-          value: Development 
-        volumeMounts:
-        - mountPath: /home/app/.aspnet/DataProtection-Keys
-          name: data
-      volumes:
-      - name: data
-        persistentVolumeClaim: 
-          claimName: pvc
+          value: Development
+        - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+          value: "true"
+        - name: ConnectionStrings__eventbus
+          value: amqp://eshop:YJr23N850SJBBqn9UUrXnE@eventbus:5672
+        - name: ConnectionStrings__redis
+          value: redis://redis:6379
+        - name: DOTNET_LAUNCH_PROFILE
+          value: http
+        - name: DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION
+          value: "true"
+        - name: Identity__Url 
+          value: https://eshop.local
+        # - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+        #   valueFrom: 
+        #     configMapKeyRef: 
+        #       name: all-env
+        #       key:  ASPNETCORE_FORWARDEDHEADERS_ENABLED
+        # - name: ConnectionStrings__eventbus
+        #   valueFrom: 
+        #     configMapKeyRef: 
+        #       name: all-env
+        #       key:  ConnectionStrings__eventbus
+        # - name: ConnectionStrings__redis
+        #   valueFrom: 
+        #     configMapKeyRef: 
+        #       name: all-env
+        #       key:  ConnectionStrings__redis
+        # - name: Identity__Url
+        #   valueFrom: 
+        #     configMapKeyRef: 
+        #       name: all-env
+        #       key:  identity_url   
+      #   - name: "DOTNET_ReadOnlyDataProtectionKeyDirectory"
+      #     value: /home/app/.aspnet/DataProtection-Keys     
+      #   volumeMounts:
+      #   - mountPath: /home/app/.aspnet/DataProtection-Keys
+      #     name: data
+      # volumes:
+      # - name: data
+      #   persistentVolumeClaim: 
+      #     claimName: pvc
 --- 
 apiVersion: v1
 kind: Service
@@ -64,6 +76,6 @@ spec:
   ports:
   - port: 8080
     targetPort: 8080
-    nodePort: 30001
-  type: NodePort
+  #   nodePort: 30001
+  # type: NodePort
 

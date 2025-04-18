@@ -21,45 +21,25 @@ spec:
         ports:
         - containerPort: 8080
         - containerPort: 8443
+        securityContext:   
+          runAsUser: 0
         env: 
-        - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
-          valueFrom: 
-            configMapKeyRef: 
-              name: all-env
-              key:  ASPNETCORE_FORWARDEDHEADERS_ENABLED
-        - name: ConnectionStrings__eventbus
-          valueFrom: 
-            configMapKeyRef: 
-              name: all-env
-              key:  ConnectionStrings__eventbus
-        - name: ConnectionStrings__webhooksdb
-          valueFrom: 
-            configMapKeyRef: 
-              name: all-env
-              key:  ConnectionStrings__webhooksdb
-        - name: IdentityUrl
-          valueFrom: 
-            configMapKeyRef: 
-              name: all-env
-              key:  identity_url    
-        - name: CallBackUrl
-          valueFrom: 
-            configMapKeyRef: 
-              name: all-env
-              key:  WebhooksApiClient       
-        - name: HTTP_PORTS
-          valueFrom: 
-            configMapKeyRef: 
-              name: all-env
-              key:  HTTP_PORTS 
-        - name: services__webhooks-api__http__0
-          value: http://172.24.158.233:30008
-        # - name: services__webhooks-api__https__0
-        #   value: http://172.24.158.233:30008  
-        # - name: "DOTNET_ReadOnlyDataProtectionKeyDirectory"
-        #   value: "/etc/dataprotection/"
         - name: ASPNETCORE_ENVIRONMENT
           value: Development
+        - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+          value: "true"
+        - name: CallBackUrl
+          value: https://webhook.local
+        - name: IdentityUrl
+          value: https://eshop.local
+        - name: DOTNET_LAUNCH_PROFILE
+          value: https
+        - name: DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION
+          value: "true" 
+        - name: Identity__Url
+          value: https://eshop.local
+        - name: services__webhooks-api__http__0
+          value: http://webhooks-api:8080
         volumeMounts:
         - mountPath: /home/app/.aspnet/DataProtection-Keys
           name: data
@@ -82,3 +62,34 @@ spec:
     name: http
     nodePort: 30007
   type: NodePort
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: webhook-client-ingress
+  labels:
+    name: webhook-client-ingress
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "32k"
+    nginx.ingress.kubernetes.io/proxy-buffers-number: "8"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - webhook.local
+    secretName: webhook-tls
+  rules:
+  - host: webhook.local
+    http:
+      paths:
+      - pathType: Prefix
+        path: /
+        backend:
+          service:
+            name: webhook-client
+            port:
+              number: 8080

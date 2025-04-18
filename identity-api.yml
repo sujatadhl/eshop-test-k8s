@@ -24,42 +24,58 @@ spec:
         securityContext:
           runAsUser: 0
         env:
-        - name: WebAppClient
-          value: http://172.24.158.233:30006
-        - name: ConnectionStrings__identitydb
-          valueFrom: 
-            configMapKeyRef: 
-              name: all-env
-              key: ConnectionStrings__identitydb
-        - name: HTTP_PORTS
-          valueFrom: 
-            configMapKeyRef: 
-              name: all-env
-              key: HTTP_PORTS
-        - name: BasketApiClient
-          valueFrom: 
-            configMapKeyRef: 
-              name: all-env
-              key: BasketApiClient
-        - name: OrderingApiClient
-          valueFrom: 
-            configMapKeyRef: 
-              name: all-env
-              key: OrderingApiClient
-        - name: WebhooksApiClient
-          valueFrom: 
-            configMapKeyRef: 
-              name: all-env
-              key: WebhooksApiClient
-        - name: WebhooksWebClient
-          valueFrom: 
-            configMapKeyRef: 
-              name: all-env
-              key: WebhooksWebClient
+        # - name: WebAppClient
+        #   value: https://webapp.local
+        # - name: ConnectionStrings__identitydb
+        #   valueFrom: 
+        #     configMapKeyRef: 
+        #       name: all-env
+        #       key: ConnectionStrings__identitydb
+        # - name: HTTP_PORTS
+        #   valueFrom: 
+        #     configMapKeyRef: 
+        #       name: all-env
+        #       key: HTTP_PORTS
+        # - name: BasketApiClient
+        #   valueFrom: 
+        #     configMapKeyRef: 
+        #       name: all-env
+        #       key: BasketApiClient
+        # - name: OrderingApiClient
+        #   valueFrom: 
+        #     configMapKeyRef: 
+        #       name: all-env
+        #       key: OrderingApiClient
+        # - name: WebhooksApiClient
+        #   valueFrom: 
+        #     configMapKeyRef: 
+        #       name: all-env
+        #       key: WebhooksApiClient
+        # - name: WebhooksWebClient
+        #   valueFrom: 
+        #     configMapKeyRef: 
+        #       name: all-env
+        #       key: WebhooksWebClient
         - name: ASPNETCORE_ENVIRONMENT
           value: Development
-        - name: SSL_CERT_FILE
-          value: "/etc/ssl/certs/eshop.pem"
+        - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
+          value: "true"
+        - name: BasketApiClient
+          value: http://basket-api:8080
+        - name: OrderingApiClient
+          value: http://ordering-api:8080
+        - name: WebAppClient
+          value: https://webapp.local
+        - name: WebhooksApiClient
+          value: http://webhooks-api:8080
+        - name: WebhooksWebClient
+          value: https://webhook.local
+        - name: ConnectionStrings__identitydb
+          value: Host=db;Port=5432;Username=postgres;Password=Testtest#111;Database=identitydb
+        - name: DOTNET_LAUNCH_PROFILE
+          value: https
+        - name: DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION
+          value: "true" 
         volumeMounts:
         - mountPath: /home/app/.aspnet/DataProtection-Keys
           name: data
@@ -92,7 +108,10 @@ metadata:
   labels:
     name: identity-api-ingress
   annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "32k"
+    nginx.ingress.kubernetes.io/proxy-buffers-number: "8"
 spec:
   ingressClassName: nginx
   tls:
