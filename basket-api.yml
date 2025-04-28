@@ -36,35 +36,7 @@ spec:
           value: "true"
         - name: Identity__Url 
           value: https://eshop.local
-        # - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
-        #   valueFrom: 
-        #     configMapKeyRef: 
-        #       name: all-env
-        #       key:  ASPNETCORE_FORWARDEDHEADERS_ENABLED
-        # - name: ConnectionStrings__eventbus
-        #   valueFrom: 
-        #     configMapKeyRef: 
-        #       name: all-env
-        #       key:  ConnectionStrings__eventbus
-        # - name: ConnectionStrings__redis
-        #   valueFrom: 
-        #     configMapKeyRef: 
-        #       name: all-env
-        #       key:  ConnectionStrings__redis
-        # - name: Identity__Url
-        #   valueFrom: 
-        #     configMapKeyRef: 
-        #       name: all-env
-        #       key:  identity_url   
-      #   - name: "DOTNET_ReadOnlyDataProtectionKeyDirectory"
-      #     value: /home/app/.aspnet/DataProtection-Keys     
-      #   volumeMounts:
-      #   - mountPath: /home/app/.aspnet/DataProtection-Keys
-      #     name: data
-      # volumes:
-      # - name: data
-      #   persistentVolumeClaim: 
-      #     claimName: pvc
+          
 --- 
 apiVersion: v1
 kind: Service
